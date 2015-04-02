@@ -16,7 +16,6 @@ public class MainActivity extends ActionBarActivity {
 
     RadioButton rbV1, rbV2;
     Button btnUp, btnDown, btnLeft, btnRight;
-    boolean isStartUp = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
