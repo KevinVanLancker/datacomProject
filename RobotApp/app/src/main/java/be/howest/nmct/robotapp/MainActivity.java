@@ -2,11 +2,14 @@ package be.howest.nmct.robotapp;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+
+import java.io.Console;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -28,10 +31,7 @@ public class MainActivity extends ActionBarActivity {
         btnUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(Collision() == false){
                     Forward();
-                }
-
             }
         });
 
@@ -59,6 +59,26 @@ public class MainActivity extends ActionBarActivity {
         rbV1 = (RadioButton) findViewById(R.id.rbVersie1);
         rbV2 = (RadioButton) findViewById(R.id.rbVersie2);
 
+        rbV1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                EnableRbV1();
+            }
+        });
+
+        rbV2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EnableRbV2();
+            }
+        });
+
+
+
+    }
+
+    private void EnableRbV1() {
         if(rbV1.isChecked()){
             if(rbV2.isChecked()){
                 rbV2.setChecked(false);
@@ -66,18 +86,18 @@ public class MainActivity extends ActionBarActivity {
             DisableButtons();
             AutonoomRijden();
         }
+    }
 
+    private void EnableRbV2() {
         if(rbV2.isChecked()){
             if(rbV1.isChecked()){
                 rbV1.setChecked(false);
             }
-            if(!isStartUp){
                 EnableButtons();
-            }
+
 
             BedienRobot();
         }
-
     }
 
     private void DisableButtons(){
@@ -96,29 +116,35 @@ public class MainActivity extends ActionBarActivity {
 
     private void AutonoomRijden(){
         //laat robot autonoom rijden
+        Log.d("autonoom","autonoom");
     }
 
     private void BedienRobot(){
         //laat robot bedienen
         //zorg dat robot stilstaat als er geen input is
+        Log.d("bedien", "bedien");
 
 
     }
 
     private void Forward(){
         //ga vooruit
+        Log.d("vooruit", "vooruit");
     }
 
     private void Backward(){
         //ga achteruit
+        Log.d("","achteruit");
     }
 
     private void Left(){
         //ga links
+        Log.d("","links");
     }
 
     private void Right(){
         //ga rechts
+        Log.d("","rechts");
     }
 
     private boolean Collision(){
