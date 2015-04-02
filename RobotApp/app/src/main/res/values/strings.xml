@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">RobotApp</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="rbV1">Versie 1: autonoom</string>
+    <string name="rbV2">Versie 2: besturing</string>
+    <string name="up"> Vooruit</string>
+    <string name="down">Achteruit </string>
+    <string name="left">Links</string>
+    <string name="right">Rechts</string>
+</resources>
