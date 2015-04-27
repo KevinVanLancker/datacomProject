@@ -39,7 +39,6 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
     private long lastUpdate = 0;
-    private float last_y, last_z;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +101,8 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
 
-        /*CheckBt();
-        findArBt();
+        CheckBt();
+        /*findArBt();
         connect();*/
 
 
@@ -200,26 +199,23 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             float y = sensorEvent.values[1];
             float z = sensorEvent.values[2];
-
             long curTime = System.currentTimeMillis();
 
             if ((curTime - lastUpdate) > 100) {
                 lastUpdate = curTime;
-                // if(Math.round(z)/1000>8.0000)
-                if (Math.round(z) > 9) {
+                if (Math.round(z) > 6) {
                     //achteruit me dunkt
                         Forward();
                 } else if (Math.round(z) < 0) {
                     //vooruit me dunkt
                         Backward();
-                } else if (Math.round(y) > 3) {
+                }
+                if (Math.round(y) > 3) {
                     //rechts me dunkt
                         Left();
                 } else if (Math.round(y) < -3) {
                         Right();
                 }
-                last_y = y;
-                last_z = z;
                 }
             }
         }
