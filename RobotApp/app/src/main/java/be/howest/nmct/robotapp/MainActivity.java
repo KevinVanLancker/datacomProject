@@ -17,7 +17,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
+import android.widget.TextView;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
 import java.util.UUID;
@@ -27,15 +30,16 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
 
     RadioButton rbV1, rbV2;
     Button btnUp, btnDown, btnLeft, btnRight;
-    Boolean bedien = false;
+    Boolean isAuto = false;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket btSocket = null;
     private BluetoothDevice mmDevice;
     private OutputStream outStream = null;
+    private InputStream inStream = null;
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
     private long lastUpdate = 0;
-    private float last_x, last_z;
+    private float last_y, last_z;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +86,6 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         rbV1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 EnableRbV1();
             }
         });
@@ -99,9 +102,9 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
 
-        CheckBt();
+        /*CheckBt();
         findArBt();
-        connect();
+        connect();*/
 
 
     }
@@ -112,7 +115,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
                 rbV2.setChecked(false);
             }
             DisableButtons();
-            bedien = false;
+            isAuto = true;
             AutonoomRijden();
         }
     }
@@ -123,7 +126,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
                 rbV1.setChecked(false);
             }
             EnableButtons();
-            bedien = true;
+            isAuto = false;
             BedienRobot();
         }
     }
@@ -145,14 +148,14 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
     private void AutonoomRijden(){
         //laat robot autonoom rijden
         Log.d("autonoom","autonoom");
-        writeData("auto");
+    //    writeData("0");
     }
 
     private void BedienRobot(){
         //laat robot bedienen
         //zorg dat robot stilstaat als er geen input is
-        Log.d("bedien", "bedien");
-        writeData("bedien");
+        Log.d("isAuto", "isAuto");
+      //  writeData("1");
 
 
     }
@@ -162,41 +165,40 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         if(Collision())
             return;
         Log.d("vooruit", "vooruit");
-        writeData("vooruit");
+     //   writeData("8");
     }
 
     private void Backward(){
         //ga achteruit
         Log.d("","achteruit");
-        writeData("achteruit");
+    //    writeData("2");
     }
 
     private void Left(){
         //ga links
         Log.d("","links");
-        writeData("links");
+     //   writeData("4");
     }
 
     private void Right(){
         //ga rechts
         Log.d("","rechts");
-        writeData("rechts");
+      //  writeData("6");
     }
 
     private boolean Collision(){
         //collision detectie
 
-        return true;
+        return false;
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
 
-        if(bedien){
+        if(!isAuto){
         Sensor mySensor = sensorEvent.sensor;
         if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float x = sensorEvent.values[0];
-           // float y = sensorEvent.values[1];
+            float y = sensorEvent.values[1];
             float z = sensorEvent.values[2];
 
             long curTime = System.currentTimeMillis();
@@ -204,21 +206,19 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             if ((curTime - lastUpdate) > 100) {
                 lastUpdate = curTime;
                 // if(Math.round(z)/1000>8.0000)
-                if (Math.round(z) > 8) {
+                if (Math.round(z) > 9) {
                     //achteruit me dunkt
-                        Backward();
-                } else if (Math.round(z) < -8) {
-                    //vooruit me dunkt
                         Forward();
-                } else if (Math.round(x) > 8) {
+                } else if (Math.round(z) < 0) {
+                    //vooruit me dunkt
+                        Backward();
+                } else if (Math.round(y) > 3) {
                     //rechts me dunkt
-                        Right();
-                } else if (Math.round(x) < -8) {
-                    //links me dunkt
                         Left();
+                } else if (Math.round(y) < -3) {
+                        Right();
                 }
-                last_x = x;
-               // last_y = y;
+                last_y = y;
                 last_z = z;
                 }
             }
@@ -269,6 +269,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             btSocket = mmDevice.createRfcommSocketToServiceRecord(uuid);
             btSocket.connect();
             outStream = btSocket.getOutputStream();
+            inStream = btSocket.getInputStream();
         }
         catch(IOException e){
             Log.d("con", "foutje bij connectie");
@@ -300,7 +301,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
+   /* @Override
     protected void onDestroy() {
         super.onDestroy();
         try {
@@ -326,9 +327,9 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         super.onResume();
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         try {
-            btSocket.close();
+            btSocket.connect();
         }
         catch (IOException e) {
         }
-    }
+    }*/
 }
