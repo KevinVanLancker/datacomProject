@@ -29,8 +29,8 @@ import java.util.UUID;
 public class MainActivity extends ActionBarActivity implements SensorEventListener {
 
     RadioButton rbV1, rbV2;
-    Button btnUp, btnDown, btnLeft, btnRight;
-    Boolean isAuto = false;
+    Button btnUp, btnDown, btnLeft, btnRight, btnHit;
+    Boolean isAuto = false, isHitOn = false;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket btSocket = null;
     private BluetoothDevice mmDevice;
@@ -49,6 +49,9 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         btnUp = (Button) findViewById(R.id.btnUp);
         btnRight = (Button) findViewById(R.id.btnRight);
         btnLeft = (Button) findViewById(R.id.btnLeft);
+        btnHit = (Button) findViewById(R.id.btnHit);
+
+        btnHit.setText("Hitdetectie is uitgeschakeld");
 
         btnUp.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,6 +81,13 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             }
         });
 
+        btnHit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SetHitDetection();
+            }
+        });
+
 
         rbV1 = (RadioButton) findViewById(R.id.rbVersie1);
         rbV2 = (RadioButton) findViewById(R.id.rbVersie2);
@@ -102,8 +112,8 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
 
         CheckBt();
-        /*findArBt();
-        connect();*/
+        findArBt();
+        connect();
 
 
     }
@@ -111,6 +121,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
     private void EnableRbV1() {
         if(rbV1.isChecked()){
             if(rbV2.isChecked()){
+                rbV2.setChecked(false);
                 rbV2.setChecked(false);
             }
             DisableButtons();
@@ -135,6 +146,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         btnLeft.setEnabled(false);
         btnDown.setEnabled(false);
         btnUp.setEnabled(false);
+        btnUp.setEnabled(false);
     }
 
     private void EnableButtons(){
@@ -142,47 +154,60 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         btnLeft.setEnabled(true);
         btnDown.setEnabled(true);
         btnUp.setEnabled(true);
+        btnHit.setEnabled(true);
     }
 
     private void AutonoomRijden(){
         //laat robot autonoom rijden
         Log.d("autonoom","autonoom");
-    //    writeData("0");
+        writeData("0");
     }
 
     private void BedienRobot(){
         //laat robot bedienen
         //zorg dat robot stilstaat als er geen input is
         Log.d("isAuto", "isAuto");
-      //  writeData("1");
+        writeData("1");
+    }
 
-
+    private void SetHitDetection(){
+        if(isHitOn){
+            btnHit.setText("Hitdetectie is ingeschakeld");
+            isHitOn = false;
+            return;
+        }
+        else{
+            btnHit.setText("Hitdetectie is uitgeschakeld");
+            isHitOn = true;
+            return;
+        }
     }
 
     private void Forward(){
         //ga vooruit
-        if(Collision())
+        if(isHitOn && Collision()){
             return;
+        }
         Log.d("vooruit", "vooruit");
-     //   writeData("8");
+        writeData("8");
     }
 
     private void Backward(){
         //ga achteruit
         Log.d("","achteruit");
-    //    writeData("2");
+        writeData("2");
     }
 
     private void Left(){
         //ga links
         Log.d("","links");
-     //   writeData("4");
+        writeData("4");
     }
 
     private void Right(){
         //ga rechts
         Log.d("","rechts");
-      //  writeData("6");
+        writeData("6");
     }
 
     private boolean Collision(){
@@ -227,8 +252,9 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
     }
 
     private void writeData(String data) {
+        byte[] dBuffer = data.getBytes();
         try {
-            outStream.write(data.getBytes());
+            outStream.write(dBuffer);
         } catch (IOException e) {
             Log.d("error", "Bug while sending stuff", e);
         }
@@ -242,6 +268,12 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             Intent enableBluetooth = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBluetooth, 0);
         }
+
+        while(!mBluetoothAdapter.isEnabled()){
+            mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        }
+
     }
 
     public void findArBt() {
@@ -251,6 +283,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             for (BluetoothDevice device : pairedDevices)
             {
                 if(device.getName().equals("HC-06")) //connecteer met het juiste device
+                //if(device.getName().equals("Windows Phone")) //connecteer met het juiste device
                 {
                     mmDevice = device;
                     break;
@@ -297,35 +330,5 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         return super.onOptionsItemSelected(item);
     }
 
-   /* @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        try {
-            btSocket.close();
-        }
-        catch (IOException e) {
-        }
-    }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        senSensorManager.unregisterListener(this);
-        try {
-            btSocket.close();
-        }
-        catch (IOException e) {
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        try {
-            btSocket.connect();
-        }
-        catch (IOException e) {
-        }
-    }*/
 }
