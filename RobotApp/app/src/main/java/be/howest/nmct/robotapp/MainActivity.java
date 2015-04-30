@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RadioButton;
@@ -29,8 +30,8 @@ import java.util.UUID;
 public class MainActivity extends ActionBarActivity implements SensorEventListener {
 
     RadioButton rbV1, rbV2;
-    Button btnUp, btnDown, btnLeft, btnRight, btnHit;
-    Boolean isAuto = false, isHitOn = false;
+    Button btnUp, btnDown, btnLeft, btnRight, btnAccel, btnStop;
+    Boolean isAuto = false, isAccelOn = false;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothSocket btSocket = null;
     private BluetoothDevice mmDevice;
@@ -49,14 +50,29 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         btnUp = (Button) findViewById(R.id.btnUp);
         btnRight = (Button) findViewById(R.id.btnRight);
         btnLeft = (Button) findViewById(R.id.btnLeft);
-        btnHit = (Button) findViewById(R.id.btnHit);
+        btnAccel = (Button) findViewById(R.id.btnAccel);
+        btnStop = (Button) findViewById(R.id.btnStop);
 
-        btnHit.setText("Hitdetectie is uitgeschakeld");
+        btnAccel.setText("De accelerometer is uitgeschakeld");
 
         btnUp.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                     Forward();
+            }
+        });
+
+        btnStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Stop();
+            }
+        });
+
+        btnAccel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SetAccelOn();
             }
         });
 
@@ -81,13 +97,6 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
             }
         });
 
-        btnHit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SetHitDetection();
-            }
-        });
-
 
         rbV1 = (RadioButton) findViewById(R.id.rbVersie1);
         rbV2 = (RadioButton) findViewById(R.id.rbVersie2);
@@ -107,15 +116,28 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         });
 
 
-        senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+
 
         CheckBt();
         findArBt();
         connect();
 
 
+        senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        senSensorManager.registerListener(this, senAccelerometer , SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private void SetAccelOn(){
+        if(isAccelOn){
+            btnAccel.setText("De accelerometer is uitgeschakeld");
+            isAccelOn = false;
+            return;
+        }
+        else{
+            isAccelOn = true;
+            btnAccel.setText("De accelerometer is ingeschakeld");
+        }
     }
 
     private void EnableRbV1() {
@@ -154,7 +176,6 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         btnLeft.setEnabled(true);
         btnDown.setEnabled(true);
         btnUp.setEnabled(true);
-        btnHit.setEnabled(true);
     }
 
     private void AutonoomRijden(){
@@ -170,24 +191,13 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         writeData("1");
     }
 
-    private void SetHitDetection(){
-        if(isHitOn){
-            btnHit.setText("Hitdetectie is ingeschakeld");
-            isHitOn = false;
-            return;
-        }
-        else{
-            btnHit.setText("Hitdetectie is uitgeschakeld");
-            isHitOn = true;
-            return;
-        }
+    private void Stop(){
+        Log.d("stop", "stop");
+        writeData("5");
     }
 
     private void Forward(){
         //ga vooruit
-        if(isHitOn && Collision()){
-            return;
-        }
         Log.d("vooruit", "vooruit");
         writeData("8");
     }
@@ -210,37 +220,33 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         writeData("6");
     }
 
-    private boolean Collision(){
-        //collision detectie
-
-        return false;
-    }
-
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
 
-        if(!isAuto){
-        Sensor mySensor = sensorEvent.sensor;
-        if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            float y = sensorEvent.values[1];
-            float z = sensorEvent.values[2];
-            long curTime = System.currentTimeMillis();
+        if(!isAuto) {
+            if (isAccelOn) {
+                Sensor mySensor = sensorEvent.sensor;
+                if (mySensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+                    float y = sensorEvent.values[1];
+                    float z = sensorEvent.values[2];
+                    long curTime = System.currentTimeMillis();
 
-            if ((curTime - lastUpdate) > 100) {
-                lastUpdate = curTime;
-                if (Math.round(z) > 6) {
-                    //achteruit me dunkt
-                        Forward();
-                } else if (Math.round(z) < 0) {
-                    //vooruit me dunkt
-                        Backward();
-                }
-                if (Math.round(y) > 3) {
-                    //rechts me dunkt
-                        Left();
-                } else if (Math.round(y) < -3) {
-                        Right();
-                }
+                    if ((curTime - lastUpdate) > 100) {
+                        lastUpdate = curTime;
+                        if (Math.round(z) > 6) {
+                            //achteruit me dunkt
+                            Forward();
+                        } else if (Math.round(z) < 0) {
+                            //vooruit me dunkt
+                            Backward();
+                        }
+                        if (Math.round(y) > 3) {
+                            //rechts me dunkt
+                            Left();
+                        } else if (Math.round(y) < -3) {
+                            Right();
+                        }
+                    }
                 }
             }
         }
@@ -255,6 +261,7 @@ public class MainActivity extends ActionBarActivity implements SensorEventListen
         byte[] dBuffer = data.getBytes();
         try {
             outStream.write(dBuffer);
+            outStream.flush();
         } catch (IOException e) {
             Log.d("error", "Bug while sending stuff", e);
         }

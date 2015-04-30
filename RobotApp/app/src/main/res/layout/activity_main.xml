@@ -38,9 +38,8 @@
         android:layout_height="wrap_content"
         android:text="@string/down"
         android:id="@+id/btnDown"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="77dp" />
+        android:layout_above="@+id/btnAccel"
+        android:layout_centerHorizontal="true" />
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -64,9 +63,17 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/btnHit"
+        android:id="@+id/btnAccel"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/stop"
+        android:id="@+id/btnStop"
+        android:layout_alignTop="@+id/btnRight"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>
